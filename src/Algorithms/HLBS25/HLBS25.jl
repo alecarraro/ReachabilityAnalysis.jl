@@ -55,7 +55,7 @@ end
 step_size(alg::HLBS25) = alg.δ
 numtype(::HLBS25{N,AM,RM,R}) where {N,AM,RM,R} = N
 
-function rsetrep(::HLBS25{N,AM,RM,R}) where {N}
+function rsetrep(::HLBS25{N,AM,RM,R}) where {N,AM,RM,R}
     return ReachSet{N,SPZ{N,Matrix{N},Matrix{N},Matrix{Int},Vector{Int}}}
 end
 
