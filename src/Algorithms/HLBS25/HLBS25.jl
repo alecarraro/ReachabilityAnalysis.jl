@@ -53,9 +53,11 @@ function HLBS25(; δ::N,
 end
 
 step_size(alg::HLBS25) = alg.δ
-numtype(::HLBS25{N}) where {N} = N
+numtype(::HLBS25{N,AM,RM,R}) where {N,AM,RM,R} = N
 
-rsetrep(::HLBS25{N}) where {N} = ReachSet{N,SPZ{N}}
+function rsetrep(::HLBS25{N,AM,RM,R}) where {N}
+    return ReachSet{N,SPZ{N,Matrix{N},Matrix{N},Matrix{Int},Vector{Int}}}
+end
 
 include("post.jl")
 include("reach_homog.jl")
