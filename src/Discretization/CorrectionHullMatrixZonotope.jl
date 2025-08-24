@@ -20,34 +20,25 @@ matrix zonotopes via a correction-hull style approximation of the matrix exponen
 
 ### Fields
 
-- `taylor_order` -- (optional, default: `5`) order of the Taylor series expansion used
-                    to approximate the matrix exponential.
-- `recursive`    -- (optional, default: `true`) whether to compute each Taylor term
-                    recursively (more accurate but more expensive) or to use a
-                    non-recursive overapproximation (cheaper, potentially coarser).
-- `ztol`         -- (optional, keyword, default: `0`) tolerance below which
-                    generators are removed.
-- `norm`         -- (optional, keyword, default: `Inf`) p-norm used to remove generators.
-
-### Notes
-
-If `recursive == true`, terms of the Taylor expansion are computed recursively
-(e.g., `A^k * P = A * (A^{k-1} * P)`), which often improves tightness at the
-cost of additional computation. If `recursive == false`, a single non-recursive
-overapproximation of the exponential is produced; this reduces cost but makes
-the quality of the result more dependent on `taylor_order`.
+- `taylor_order` -- order of the Taylor series expansion used to approximate the matrix exponential.
+- `recursive`    -- whether to compute each Taylor term recursively.
+- `tol`          -- tolerance below which generators are removed.
+- `norm`         -- p-norm used to remove generators.
 """
 struct CorrectionHullMatrixZonotope{N, R} <: AbstractApproximationModel
     taylor_order::Int
     recursive::R
-    ztol::N
+    tol::N
     norm::Real
 end
 
-function CorrectionHullMatrixZonotope(::Type{N}=Float64; taylor_order::Int=5,
-                                     recursive::Bool=true, ztol::N=zero(N),
+# explicit constructor: require tol and norm keywords (defaults provided)
+function CorrectionHullMatrixZonotope(::Type{N}=Float64;
+                                     taylor_order::Int=5,
+                                     recursive::Bool=true,
+                                     tol::N=zero(N),
                                      norm::Real=Inf) where {N}
-    return CorrectionHullMatrixZonotope{N, Val{recursive}}(taylor_order, Val(recursive), ztol, norm)
+    return CorrectionHullMatrixZonotope{N, Val{recursive}}(taylor_order, Val(recursive), tol, norm)
 end
 
 function discretize(ivp::IVP{<:LPCS, <:SparsePolynomialZonotope}, δ,
@@ -62,10 +53,9 @@ function discretize(ivp::IVP{<:LPCS, <:SparsePolynomialZonotope}, δ,
     T = MatrixZonotope(Tₜ, [Tₜ], [IDₜ])
     expAT = MatrixZonotopeExp(A * T)
 
-    # recursive logic
     em = ExponentialMap(expAT, X0)
     Ω0 = overapproximate(em, SparsePolynomialZonotope, taylor_order)
-    Ω0 = _remove_small_generators(Ω0, alg.ztol, alg.norm)
+    Ω0 = ReachabilityAnalysis._remove_small_generators(Ω0, alg.tol, alg.norm)
 
     Sdis = LPDS(A)
     return InitialValueProblem(Sdis, Ω0)
@@ -84,9 +74,8 @@ function discretize(ivp::IVP{<:LPCS, <:SparsePolynomialZonotope}, δ,
     AT = overapproximate(A * T, MatrixZonotope)
     expAT = MatrixZonotopeExp(AT)
 
-    # non-recursive logic
     expAT_approx = overapproximate(expAT, MatrixZonotope, taylor_order)
-    expAT_approx = _remove_small_generators(expAT_approx, alg.ztol, alg.norm)
+    expAT_approx = ReachabilityAnalysis._remove_small_generators(expAT_approx, alg.tol, alg.norm)
     Ω0 = overapproximate(expAT_approx * X0, SparsePolynomialZonotope)
 
     Sdis = LPDS(A)
