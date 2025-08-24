@@ -1,5 +1,5 @@
-function reach_homog_HLBS25!(F::Vector{ReachSet{N,SparsePolynomialZonotope{N,VN,MN,MNI,VI}}},
-                             Ω0::SparsePolynomialZonotope{N,VN,MN,MNI,VI},
+function reach_homog_HLBS25!(F::Vector{ReachSet{N,S}},
+                             Ω0::S,
                              Φ::MatrixZonotope{N,MN},
                              NSTEPS::Integer,
                              δ::N,
@@ -7,7 +7,7 @@ function reach_homog_HLBS25!(F::Vector{ReachSet{N,SparsePolynomialZonotope{N,VN,
                              taylor_order::Integer,
                              ::Val{false},
                              reduction_method::AbstractReductionMethod,
-                             Δt0::IA.Interval) where {N,VN,MN,MNI,VI}
+                             Δt0::IA.Interval) where {N, S<: SparsePolynomialZonotope{N}, MN<:AbstractMatrix{N}}
     # initial reach set
     Δt = (zero(N) .. δ) + Δt0
     @inbounds F[1] = ReachSet(Ω0, Δt)
@@ -28,8 +28,8 @@ function reach_homog_HLBS25!(F::Vector{ReachSet{N,SparsePolynomialZonotope{N,VN,
     return F
 end
 
-function reach_homog_HLBS25!(F::Vector{ReachSet{N,SparsePolynomialZonotope{N,VN,MN,MNI,VI}}},
-                             Ω0::SparsePolynomialZonotope{N,VN,MN,MNI,VI},
+function reach_homog_HLBS25!(F::Vector{ReachSet{N,S}},
+                             Ω0::S,
                              Φ::MatrixZonotope{N,MN},
                              NSTEPS::Integer,
                              δ::N,
@@ -37,7 +37,7 @@ function reach_homog_HLBS25!(F::Vector{ReachSet{N,SparsePolynomialZonotope{N,VN,
                              taylor_order::Integer,
                              ::Val{true},
                              reduction_method::AbstractReductionMethod,
-                             Δt0::IA.Interval) where {N,VN,MN,MNI,VI}
+                             Δt0::IA.Interval) where {N, S<: SparsePolynomialZonotope{N}, MN<:AbstractMatrix{N}}
     # initial reach set
     Δt = (zero(N) .. δ) + Δt0
     @inbounds F[1] = ReachSet(Ω0, Δt)
